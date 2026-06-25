@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LifeKit</title>
+<style>
+:root {
+  --navy: #1B2A4A;
+  --navy-light: #2d4068;
+  --amber: #F5A623;
+  --amber-hover: #e09510;
+  --bg: #ffffff;
+  --bg-warm: #FAFAF8;
+  --text: #1B2A4A;
+  --text-secondary: #5a6a82;
+  --border: #e8ecf1;
+  --card-shadow: 0 1px 3px rgba(27,42,74,0.06), 0 4px 12px rgba(27,42,74,0.04);
+  --card-hover: 0 2px 8px rgba(27,42,74,0.1), 0 8px 24px rgba(27,42,74,0.06);
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── NAV ── */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  padding: 0 1.25rem;
+}
+.topbar-inner {
+  max-width: 1080px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+}
+.logo {
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--navy);
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+.logo svg { flex-shrink: 0; }
+.topbar-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.lang-select, .country-select-nav {
+  appearance: none;
+  -webkit-appearance: none;
+  background: var(--bg-warm);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 2rem 0.4rem 0.65rem;
+  font-size: 0.82rem;
+  font-family: inherit;
+  color: var(--text);
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%231B2A4A' fill='none' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.6rem center;
+  min-width: 0;
+  max-width: 140px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* ── HERO ── */
+.hero {
+  padding: 4.5rem 1.5rem 3rem;
+  text-align: center;
+  max-width: 720px;
+  margin: 0 auto;
+}
+.hero h1 {
+  font-size: clamp(1.6rem, 4.5vw, 2.5rem);
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--navy);
+  letter-spacing: -0.025em;
+  margin-bottom: 2.5rem;
+}
+
+/* ── SEARCH ── */
+.search-wrap {
+  max-width: 600px;
+  margin: 0 auto 1rem;
+  position: relative;
+}
+.search-wrap svg {
+  position: absolute;
+  left: 1.1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+.search-input {
+  width: 100%;
+  padding: 1rem 1rem 1rem 3rem;
+  font-size: 1.05rem;
+  font-family: inherit;
+  border: 2px solid var(--border);
+  border-radius: 60px;
+  outline: none;
+  color: var(--text);
+  background: var(--bg);
+  transition: border-color 0.2s;
+}
+.search-input::placeholder { color: #9aa8bc; }
+.search-input:focus { border-color: var(--navy); }
+.search-results {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0; right: 0;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--card-hover);
+  max-height: 320px;
+  overflow-y: auto;
+  display: none;
+  z-index: 50;
+}
+.search-results.active { display: block; }
+.search-result-item {
+  padding: 0.75rem 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.95rem;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+.search-result-item:last-child { border-bottom: none; }
+.search-result-item:hover { background: var(--bg-warm); }
+.search-result-item .sr-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  width: 28px;
+  text-align: center;
+}
+.search-result-item .sr-label { font-weight: 500; }
+.search-result-item .sr-cat {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* ── COUNTRY BANNER ── */
+.country-banner {
+  max-width: 1080px;
+  margin: 0 auto 2rem;
+  padding: 0 1.5rem;
+}
+.country-banner-inner {
+  background: var(--bg-warm);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+}
+.country-banner-inner .cb-label {
+  font-weight: 600;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+.emergency-nums {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+.emergency-num {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--navy);
+  color: #fff;
+  padding: 0.3rem 0.75rem;
+  border-radius: 60px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  letter-spacing: 0.01em;
+}
+.emergency-num.amber {
+  background: var(--amber);
+  color: var(--navy);
+}
+
+/* ── TILES ── */
+.tiles-section {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 1.5rem 3rem;
+}
+.tiles-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+.tile {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem 1.25rem;
+  cursor: pointer;
+  transition: box-shadow 0.2s, transform 0.15s, border-color 0.2s;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+  color: var(--text);
+}
+.tile:hover {
+  box-shadow: var(--card-hover);
+  transform: translateY(-2px);
+  border-color: var(--navy-light);
+}
+.tile-icon {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+.tile-label {
+  font-weight: 600;
+  font-size: 0.95rem;
+  line-height: 1.3;
+}
+.tile.urgent {
+  border-color: var(--amber);
+  background: linear-gradient(to bottom, #FFFCF5, var(--bg));
+}
+.tile.urgent:hover {
+  border-color: var(--amber-hover);
+}
+
+/* ── SECTIONS ── */
+.content-sections {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 1.5rem 4rem;
+}
+.section-block {
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+.section-block.active { display: block; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--navy);
+}
+.section-header .sh-icon { font-size: 1.5rem; }
+.section-header h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--navy);
+  letter-spacing: -0.02em;
+}
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+  padding: 0.5rem 0;
+  margin-bottom: 1rem;
+  font-weight: 500;
+  transition: color 0.15s;
+}
+.back-btn:hover { color: var(--navy); }
+
+.step-list {
+  list-style: none;
+  counter-reset: steps;
+}
+.step-list li {
+  counter-increment: steps;
+  padding: 1rem 1rem 1rem 3.5rem;
+  position: relative;
+  border-left: 2px solid var(--border);
+  margin-left: 1rem;
+  margin-bottom: 0.25rem;
+}
+.step-list li::before {
+  content: counter(steps);
+  position: absolute;
+  left: -1.1rem;
+  top: 1rem;
+  width: 2rem;
+  height: 2rem;
+  background: var(--navy);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.step-list li:last-child { border-left-color: transparent; }
+.step-list li strong {
+  display: block;
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+  color: var(--navy);
+}
+.step-list li p {
+  font-size: 0.93rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+.hotline-box {
+  margin-top: 1.5rem;
+  background: #FFF9EE;
+  border: 1px solid #F0DFB8;
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+}
+.hotline-box h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 0.75rem;
+}
+.hotline-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.hotline-list li {
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.hotline-list li strong { color: var(--navy); }
+
+.info-card {
+  background: var(--bg-warm);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  margin-top: 1rem;
+}
+.info-card h4 {
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+  color: var(--navy);
+}
+.info-card p, .info-card ul {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+.info-card ul { list-style: disc; padding-left: 1.25rem; margin-top: 0.4rem; }
+.info-card ul li { margin-bottom: 0.25rem; }
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--amber);
+  color: var(--navy);
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 60px;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  margin-top: 1.25rem;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.action-btn:hover { background: var(--amber-hover); }
+
+.sub-section { margin-top: 2rem; }
+.sub-section h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 0.75rem;
+}
+
+/* ── RTL ── */
+html[dir="rtl"] .search-wrap svg { left: auto; right: 1.1rem; }
+html[dir="rtl"] .search-input { padding: 1rem 3rem 1rem 1rem; }
+html[dir="rtl"] .step-list li { border-left: none; border-right: 2px solid var(--border); margin-left: 0; margin-right: 1rem; padding: 1rem 3.5rem 1rem 1rem; }
+html[dir="rtl"] .step-list li::before { left: auto; right: -1.1rem; }
+html[dir="rtl"] .step-list li:last-child { border-right-color: transparent; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  .tiles-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+  .tile { padding: 1.25rem 1rem; }
+  .hero { padding: 3rem 1.25rem 2rem; }
+  .country-banner { padding: 0 1rem; }
+  .content-sections { padding: 0 1rem 3rem; }
+  .tiles-section { padding: 0 1rem 2rem; }
+  .lang-select, .country-select-nav { max-width: 110px; font-size: 0.78rem; padding: 0.35rem 1.6rem 0.35rem 0.5rem; }
+}
+@media (max-width: 480px) {
+  .topbar-inner { height: 50px; }
+  .logo { font-size: 1.1rem; }
+  .hero h1 { font-size: 1.4rem; }
+  .tile-icon { font-size: 1.5rem; }
+  .tile-label { font-size: 0.85rem; }
+  .step-list li { padding-left: 3rem; }
+  html[dir="rtl"] .step-list li { padding-left: 1rem; padding-right: 3rem; }
+}
+
+/* ── PRINT ── */
+@media print {
+  .topbar, .search-wrap, .back-btn, .tiles-section, .country-banner { display: none; }
+  .section-block { display: block !important; page-break-inside: avoid; margin-bottom: 2rem; }
+  .hero { padding: 1rem 0; }
+  body { font-size: 11pt; }
+}
+
+/* ── BOTTOM CLEARANCE ── */
+.content-sections { padding-bottom: 80px; }
+</style>
+</head>
+<body>
+
+<!-- ── TOPBAR ── -->
+<nav class="topbar">
+  <div class="topbar-inner">
+    <a class="logo" onclick="showHome()" aria-label="LifeKit Home">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      LifeKit
+    </a>
+    <div class="topbar-controls">
+      <select class="country-select-nav" id="countrySelect" aria-label="Select your country" onchange="updateCountry()"></select>
+      <select class="lang-select" id="langSelect" aria-label="Select language" onchange="updateLanguage()"></select>
+    </div>
+  </div>
+</nav>
+
+<!-- ── HERO ── -->
+<section class="hero" id="heroSection">
+  <h1 id="heroText">Whatever you're facing, here's what to do.</h1>
+  <div class="search-wrap">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="search" class="search-input" id="searchInput" autocomplete="off" aria-label="Search for help">
+    <div class="search-results" id="searchResults"></div>
+  </div>
+</section>
+
+<!-- ── COUNTRY BANNER ── -->
+<div class="country-banner" id="countryBanner" style="display:none;">
+  <div class="country-banner-inner">
+    <span class="cb-label" id="cbLabel">Emergency numbers:</span>
+    <div class="emergency-nums" id="emergencyNums"></div>
+  </div>
+</div>
+
+<!-- ── TILES ── -->
+<section class="tiles-section" id="tilesSection">
+  <div class="tiles-grid" id="tilesGrid"></div>
+</section>
+
+<!-- ── CONTENT SECTIONS ── -->
+<main class="content-sections" id="contentSections"></main>
+
+<script>
+// ─── DATA ───
+const CATEGORIES = [
+  { id:'medical', icon:'🏥', urgent:true },
+  { id:'mental',  icon:'💙', urgent:false },
+  { id:'money',   icon:'💰', urgent:false },
+  { id:'rights',  icon:'⚖️', urgent:false },
+  { id:'disaster',icon:'🌊', urgent:false },
+  { id:'food',    icon:'🥤', urgent:false },
+  { id:'escape',  icon:'🛡️', urgent:true },
+  { id:'local',   icon:'📍', urgent:false }
+];
+
+const LANGS = {
+  en:{name:'English',dir:'ltr'},
+  zh:{name:'中文',dir:'ltr'},
+  hi:{name:'हिन्दी',dir:'ltr'},
+  es:{name:'Español',dir:'ltr'},
+  fr:{name:'Français',dir:'ltr'},
+  ar:{name:'العربية',dir:'rtl'},
+  bn:{name:'বাংলা',dir:'ltr'},
+  pt:{name:'Português',dir:'ltr'},
+  ru:{name:'Русский',dir:'ltr'},
+  ja:{name:'日本語',dir:'ltr'},
+  pa:{name:'ਪੰਜਾਬੀ',dir:'ltr'},
+  de:{name:'Deutsch',dir:'ltr'},
+  jv:{name:'Basa Jawa',dir:'ltr'},
+  ko:{name:'한국어',dir:'ltr'},
+  tr:{name:'Türkçe',dir:'ltr'},
+  vi:{name:'Tiếng Việt',dir:'ltr'},
+  it:{name:'Italiano',dir:'ltr'},
+  th:{name:'ไทย',dir:'ltr'},
+  sw:{name:'Kiswahili',dir:'ltr'},
+  ms:{name:'Bahasa Melayu',dir:'ltr'}
+};
+
+const UI = {
+  en:{hero:"Whatever you're facing, here's what to do.",search:"What do you need help with right now?",emergency:"Emergency numbers",back:"Back to all topics",medical:"Medical Emergency",mental:"Mental Health",money:"I Have No Money",rights:"My Rights",disaster:"Disaster & Safety",food:"Food & Water",escape:"Escape Danger",local:"Find Local Help",hotlines:"Hotlines for your country"},
+  zh:{hero:"无论你面对什么，这里告诉你该怎么做。",search:"你现在需要什么帮助？",emergency:"急救电话",back:"返回所有主题",medical:"医疗急救",mental:"心理健康",money:"我没有钱",rights:"我的权利",disaster:"灾害与安全",food:"食物与水",escape:"脱离危险",local:"寻找当地帮助",hotlines:"您所在国家的热线"},
+  hi:{hero:"आप जो भी सामना कर रहे हैं, यहाँ बताया गया है कि क्या करना है।",search:"आपको अभी किस मदद की ज़रूरत है?",emergency:"आपातकालीन नंबर",back:"सभी विषयों पर वापस",medical:"चिकित्सा आपातकाल",mental:"मानसिक स्वास्थ्य",money:"मेरे पास पैसे नहीं हैं",rights:"मेरे अधिकार",disaster:"आपदा और सुरक्षा",food:"भोजन और पानी",escape:"खतरे से बचें",local:"स्थानीय सहायता खोजें",hotlines:"आपके देश के लिए हेल्पलाइन"},
+  es:{hero:"Sea lo que sea que enfrentes, aquí te decimos qué hacer.",search:"¿Qué ayuda necesitas ahora mismo?",emergency:"Números de emergencia",back:"Volver a todos los temas",medical:"Emergencia Médica",mental:"Salud Mental",money:"No Tengo Dinero",rights:"Mis Derechos",disaster:"Desastre y Seguridad",food:"Comida y Agua",escape:"Escapar del Peligro",local:"Encontrar Ayuda Local",hotlines:"Líneas de ayuda de tu país"},
+  fr:{hero:"Peu importe ce que vous traversez, voici quoi faire.",search:"De quelle aide avez-vous besoin maintenant ?",emergency:"Numéros d'urgence",back:"Retour aux sujets",medical:"Urgence Médicale",mental:"Santé Mentale",money:"Je N'ai Pas d'Argent",rights:"Mes Droits",disaster:"Catastrophe et Sécurité",food:"Nourriture et Eau",escape:"Échapper au Danger",local:"Trouver de l'Aide Locale",hotlines:"Lignes d'aide de votre pays"},
+  ar:{hero:"مهما كنت تواجه، إليك ما يجب فعله.",search:"ما المساعدة التي تحتاجها الآن؟",emergency:"أرقام الطوارئ",back:"العودة إلى جميع المواضيع",medical:"طوارئ طبية",mental:"الصحة النفسية",money:"ليس لدي مال",rights:"حقوقي",disaster:"كوارث وسلامة",food:"طعام وماء",escape:"الهروب من الخطر",local:"إيجاد مساعدة محلية",hotlines:"خطوط مساعدة في بلدك"},
+  bn:{hero:"আপনি যা-ই মোকাবেলা করছেন, এখানে কী করতে হবে।",search:"আপনার এখন কী সাহায্য দরকার?",emergency:"জরুরি নম্বর",back:"সব বিষয়ে ফিরে যান",medical:"চিকিৎসা জরুরি",mental:"মানসিক স্বাস্থ্য",money:"আমার কোনো টাকা নেই",rights:"আমার অধিকার",disaster:"দুর্যোগ ও নিরাপত্তা",food:"খাদ্য ও পানি",escape:"বিপদ থেকে পালান",local:"স্থানীয় সাহায্য খুঁজুন",hotlines:"আপনার দেশের হেল্পলাইন"},
+  pt:{hero:"Seja o que for que você enfrenta, aqui está o que fazer.",search:"De que ajuda você precisa agora?",emergency:"Números de emergência",back:"Voltar a todos os temas",medical:"Emergência Médica",mental:"Saúde Mental",money:"Não Tenho Dinheiro",rights:"Meus Direitos",disaster:"Desastre e Segurança",food:"Comida e Água",escape:"Fugir do Perigo",local:"Encontrar Ajuda Local",hotlines:"Linhas de ajuda do seu país"},
+  ru:{hero:"Что бы вы ни переживали — вот что нужно делать.",search:"Какая помощь вам нужна прямо сейчас?",emergency:"Экстренные номера",back:"Вернуться ко всем темам",medical:"Скорая Помощь",mental:"Психическое Здоровье",money:"У Меня Нет Денег",rights:"Мои Права",disaster:"Катастрофа и Безопасность",food:"Еда и Вода",escape:"Спастись от Опасности",local:"Найти Местную Помощь",hotlines:"Горячие линии вашей страны"},
+  ja:{hero:"何に直面していても、ここに対処法があります。",search:"今、どんな助けが必要ですか？",emergency:"緊急電話番号",back:"すべてのトピックに戻る",medical:"救急医療",mental:"メンタルヘルス",money:"お金がない",rights:"私の権利",disaster:"災害と安全",food:"食料と水",escape:"危険から逃れる",local:"地域の支援を探す",hotlines:"あなたの国のホットライン"},
+  pa:{hero:"ਤੁਸੀਂ ਜੋ ਵੀ ਸਾਹਮਣਾ ਕਰ ਰਹੇ ਹੋ, ਇੱਥੇ ਦੱਸਿਆ ਗਿਆ ਹੈ ਕੀ ਕਰਨਾ ਹੈ।",search:"ਤੁਹਾਨੂੰ ਹੁਣੇ ਕਿਸ ਮਦਦ ਦੀ ਲੋੜ ਹੈ?",emergency:"ਐਮਰਜੈਂਸੀ ਨੰਬਰ",back:"ਸਾਰੇ ਵਿਸ਼ਿਆਂ ਤੇ ਵਾਪਸ",medical:"ਡਾਕਟਰੀ ਐਮਰਜੈਂਸੀ",mental:"ਮਾਨਸਿਕ ਸਿਹਤ",money:"ਮੇਰੇ ਕੋਲ ਪੈਸੇ ਨਹੀਂ",rights:"ਮੇਰੇ ਹੱਕ",disaster:"ਆਫ਼ਤ ਅਤੇ ਸੁਰੱਖਿਆ",food:"ਭੋਜਨ ਅਤੇ ਪਾਣੀ",escape:"ਖ਼ਤਰੇ ਤੋਂ ਬਚੋ",local:"ਸਥਾਨਕ ਮਦਦ ਲੱਭੋ",hotlines:"ਤੁਹਾਡੇ ਦੇਸ਼ ਦੀਆਂ ਹੈਲਪਲਾਈਨਾਂ"},
+  de:{hero:"Was auch immer Sie durchmachen — hier erfahren Sie, was zu tun ist.",search:"Welche Hilfe brauchen Sie gerade?",emergency:"Notrufnummern",back:"Zurück zu allen Themen",medical:"Medizinischer Notfall",mental:"Psychische Gesundheit",money:"Ich Habe Kein Geld",rights:"Meine Rechte",disaster:"Katastrophe & Sicherheit",food:"Nahrung & Wasser",escape:"Gefahr Entkommen",local:"Lokale Hilfe Finden",hotlines:"Hotlines für Ihr Land"},
+  jv:{hero:"Apa wae sing sampeyan adhepi, iki sing kudu ditindakake.",search:"Bantuan apa sing sampeyan butuhake saiki?",emergency:"Nomer darurat",back:"Bali menyang kabeh topik",medical:"Darurat Medis",mental:"Kesehatan Mental",money:"Aku Ora Duwe Dhuwit",rights:"Hak-Hakku",disaster:"Bencana & Keselamatan",food:"Pangan & Banyu",escape:"Uwal saka Bebaya",local:"Golek Bantuan Lokal",hotlines:"Hotline kanggo negaramu"},
+  ko:{hero:"무엇을 겪고 있든, 여기 해야 할 일이 있습니다.",search:"지금 어떤 도움이 필요하세요?",emergency:"긴급 전화번호",back:"모든 주제로 돌아가기",medical:"의료 응급",mental:"정신 건강",money:"돈이 없어요",rights:"나의 권리",disaster:"재난과 안전",food:"음식과 물",escape:"위험에서 벗어나기",local:"지역 도움 찾기",hotlines:"당신 나라의 핫라인"},
+  tr:{hero:"Ne ile karşı karşıya olursanız olun, işte yapmanız gereken.",search:"Şu anda neye ihtiyacınız var?",emergency:"Acil numaralar",back:"Tüm konulara dön",medical:"Tıbbi Acil",mental:"Ruh Sağlığı",money:"Param Yok",rights:"Haklarım",disaster:"Afet ve Güvenlik",food:"Yiyecek ve Su",escape:"Tehlikeden Kaç",local:"Yerel Yardım Bul",hotlines:"Ülkenizdeki yardım hatları"},
+  vi:{hero:"Dù bạn đang đối mặt với điều gì, đây là những gì cần làm.",search:"Bạn cần giúp gì ngay bây giờ?",emergency:"Số khẩn cấp",back:"Quay lại tất cả chủ đề",medical:"Cấp Cứu Y Tế",mental:"Sức Khỏe Tâm Thần",money:"Tôi Không Có Tiền",rights:"Quyền Của Tôi",disaster:"Thảm Họa & An Toàn",food:"Thực Phẩm & Nước",escape:"Thoát Khỏi Nguy Hiểm",local:"Tìm Trợ Giúp Địa Phương",hotlines:"Đường dây nóng cho quốc gia bạn"},
+  it:{hero:"Qualunque cosa tu stia affrontando, ecco cosa fare.",search:"Di quale aiuto hai bisogno adesso?",emergency:"Numeri di emergenza",back:"Torna a tutti gli argomenti",medical:"Emergenza Medica",mental:"Salute Mentale",money:"Non Ho Soldi",rights:"I Miei Diritti",disaster:"Disastro e Sicurezza",food:"Cibo e Acqua",escape:"Fuggire dal Pericolo",local:"Trovare Aiuto Locale",hotlines:"Numeri utili nel tuo paese"},
+  th:{hero:"ไม่ว่าคุณจะเผชิญอะไร นี่คือสิ่งที่ต้องทำ",search:"คุณต้องการความช่วยเหลืออะไรตอนนี้?",emergency:"หมายเลขฉุกเฉิน",back:"กลับไปยังหัวข้อทั้งหมด",medical:"เหตุฉุกเฉินทางการแพทย์",mental:"สุขภาพจิต",money:"ฉันไม่มีเงิน",rights:"สิทธิของฉัน",disaster:"ภัยพิบัติและความปลอดภัย",food:"อาหารและน้ำ",escape:"หนีจากอันตราย",local:"ค้นหาความช่วยเหลือในท้องถิ่น",hotlines:"สายด่วนในประเทศของคุณ"},
+  sw:{hero:"Chochote unachokabiliana nacho, hivi ndivyo vya kufanya.",search:"Unahitaji msaada gani sasa hivi?",emergency:"Nambari za dharura",back:"Rudi kwa mada zote",medical:"Dharura ya Matibabu",mental:"Afya ya Akili",money:"Sina Pesa",rights:"Haki Zangu",disaster:"Maafa na Usalama",food:"Chakula na Maji",escape:"Kutoroka Hatari",local:"Tafuta Msaada wa Karibu",hotlines:"Simu za msaada katika nchi yako"},
+  ms:{hero:"Apa pun yang anda hadapi, inilah yang perlu dilakukan.",search:"Apakah bantuan yang anda perlukan sekarang?",emergency:"Nombor kecemasan",back:"Kembali ke semua topik",medical:"Kecemasan Perubatan",mental:"Kesihatan Mental",money:"Saya Tiada Wang",rights:"Hak Saya",disaster:"Bencana & Keselamatan",food:"Makanan & Air",escape:"Melarikan Diri dari Bahaya",local:"Cari Bantuan Tempatan",hotlines:"Talian bantuan untuk negara anda"}
+};
+
+const COUNTRIES = {
+  "United States":{code:"US",police:"911",fire:"911",ambulance:"911",crisis:"988 (Suicide & Crisis Lifeline)",dv:"1-800-799-7233 (Domestic Violence)"},
+  "United Kingdom":{code:"GB",police:"999",fire:"999",ambulance:"999",crisis:"116 123 (Samaritans)",dv:"0808 2000 247 (Refuge)"},
+  "Canada":{code:"CA",police:"911",fire:"911",ambulance:"911",crisis:"988 (Suicide Crisis Helpline)",dv:"1-800-363-9010"},
+  "Australia":{code:"AU",police:"000",fire:"000",ambulance:"000",crisis:"13 11 14 (Lifeline)",dv:"1800 737 732"},
+  "India":{code:"IN",police:"100",fire:"101",ambulance:"102",crisis:"9152987821 (iCall)",dv:"181 (Women Helpline)"},
+  "Germany":{code:"DE",police:"110",fire:"112",ambulance:"112",crisis:"0800 111 0 111 (Telefonseelsorge)",dv:"08000 116 016"},
+  "France":{code:"FR",police:"17",fire:"18",ambulance:"15",crisis:"3114 (Numéro National)",dv:"3919 (Violences Femmes)"},
+  "Brazil":{code:"BR",police:"190",fire:"193",ambulance:"192",crisis:"188 (CVV)",dv:"180 (Central da Mulher)"},
+  "Japan":{code:"JP",police:"110",fire:"119",ambulance:"119",crisis:"0570-064-556 (Yorisoi)",dv:"0120-279-338"},
+  "China":{code:"CN",police:"110",fire:"119",ambulance:"120",crisis:"400-161-9995",dv:"12338"},
+  "South Korea":{code:"KR",police:"112",fire:"119",ambulance:"119",crisis:"1393 (Mental Health)",dv:"1366"},
+  "Mexico":{code:"MX",police:"911",fire:"911",ambulance:"911",crisis:"800-290-0024 (SAPTEL)",dv:"800-911-2511"},
+  "South Africa":{code:"ZA",police:"10111",fire:"10177",ambulance:"10177",crisis:"0800 567 567 (SADAG)",dv:"0800 150 150"},
+  "Nigeria":{code:"NG",police:"112",fire:"112",ambulance:"112",crisis:"0800 800 2000",dv:"08000 333 333"},
+  "Kenya":{code:"KE",police:"999",fire:"999",ambulance:"999",crisis:"0800 723 253 (Befrienders)",dv:"1195 (GBV Hotline)"},
+  "Indonesia":{code:"ID",police:"110",fire:"113",ambulance:"118",crisis:"119 ext 8",dv:"021-390-3963"},
+  "Philippines":{code:"PH",police:"911",fire:"911",ambulance:"911",crisis:"0917-899-8727 (Hopeline)",dv:"1343 (DSWD)"},
+  "Pakistan":{code:"PK",police:"15",fire:"16",ambulance:"115",crisis:"0311-7786264",dv:"1099"},
+  "Bangladesh":{code:"BD",police:"999",fire:"999",ambulance:"999",crisis:"16789 (Kaan Pete Roi)",dv:"10921 (National Helpline)"},
+  "Russia":{code:"RU",police:"102",fire:"101",ambulance:"103",crisis:"8-800-2000-122",dv:"8-495-205-0550"},
+  "Turkey":{code:"TR",police:"155",fire:"110",ambulance:"112",crisis:"182 (ALO Psikiyatri)",dv:"183 (ALO Şiddet)"},
+  "Egypt":{code:"EG",police:"122",fire:"180",ambulance:"123",crisis:"08008880700",dv:"15115"},
+  "Italy":{code:"IT",police:"112",fire:"115",ambulance:"118",crisis:"06 77208977 (Telefono Amico)",dv:"1522"},
+  "Spain":{code:"ES",police:"112",fire:"112",ambulance:"112",crisis:"024 (Línea de Atención)",dv:"016"},
+  "Thailand":{code:"TH",police:"191",fire:"199",ambulance:"1669",crisis:"1323 (Mental Health)",dv:"1300"},
+  "Vietnam":{code:"VN",police:"113",fire:"114",ambulance:"115",crisis:"1800 599 920",dv:"111"},
+  "Colombia":{code:"CO",police:"123",fire:"119",ambulance:"125",crisis:"106 (Línea 106)",dv:"155 (Línea Mujer)"},
+  "Argentina":{code:"AR",police:"911",fire:"100",ambulance:"107",crisis:"135 (Asistencia al Suicida)",dv:"144 (Línea de Violencia)"},
+  "Poland":{code:"PL",police:"112",fire:"112",ambulance:"112",crisis:"116 123",dv:"800 120 002"},
+  "Netherlands":{code:"NL",police:"112",fire:"112",ambulance:"112",crisis:"113 (Zelfmoordpreventie)",dv:"0800-2000 (Veilig Thuis)"},
+  "Saudi Arabia":{code:"SA",police:"999",fire:"998",ambulance:"997",crisis:"920033360",dv:"1919"},
+  "Malaysia":{code:"MY",police:"999",fire:"994",ambulance:"999",crisis:"03-7956 8145 (Befrienders)",dv:"15999 (Talian Kasih)"},
+  "Sweden":{code:"SE",police:"112",fire:"112",ambulance:"112",crisis:"90101 (Mind)",dv:"020-50 50 50 (Kvinnofridslinjen)"},
+  "New Zealand":{code:"NZ",police:"111",fire:"111",ambulance:"111",crisis:"1737 (Need to Talk?)",dv:"0800 456 450 (Women's Refuge)"},
+  "Singapore":{code:"SG",police:"999",fire:"995",ambulance:"995",crisis:"1800-221-4444 (SOS)",dv:"1800-777-0000 (ComCare)"},
+  "UAE":{code:"AE",police:"999",fire:"997",ambulance:"998",crisis:"800-HOPE (4673)",dv:"800-111"},
+  "Ireland":{code:"IE",police:"999",fire:"999",ambulance:"999",crisis:"116 123 (Samaritans)",dv:"1800 341 900 (Women's Aid)"},
+  "Switzerland":{code:"CH",police:"117",fire:"118",ambulance:"144",crisis:"143 (Die Dargebotene Hand)",dv:"0800 44 88 00"},
+  "Portugal":{code:"PT",police:"112",fire:"112",ambulance:"112",crisis:"808 200 204 (SOS Voz Amiga)",dv:"800 202 148 (APAV)"}
+};
+
+const SECTION_CONTENT = {
+  medical: {
+    steps: [
+      {title:"Check the scene is safe",desc:"Before helping, make sure you and the person are not in immediate danger (traffic, fire, electrical hazards). Move to safety if needed."},
+      {title:"Call your local emergency number",desc:"Dial the number shown above for your country. Stay calm. Tell them your location, what happened, and how many people need help. Stay on the line."},
+      {title:"Check for responsiveness",desc:"Tap the person's shoulders firmly and shout \"Are you okay?\" If they don't respond, check if they are breathing normally — look at the chest for movement for 10 seconds."},
+      {title:"Start CPR if not breathing",desc:"Place the heel of your hand on the centre of the chest, interlock your other hand on top. Push hard and fast — about 5 cm deep, at 100–120 pushes per minute. Don't stop until help arrives."},
+      {title:"Control severe bleeding",desc:"Press a clean cloth firmly on the wound and hold pressure. Don't remove it — add more cloth on top. If a limb, elevate it above the heart. Apply a tourniquet only if trained and bleeding is life-threatening."},
+      {title:"Handle choking",desc:"If someone is clutching their throat and cannot speak or cough: stand behind them, make a fist just above their navel, grasp with the other hand, and pull sharply inward and upward. Repeat until the object comes out or they become unconscious."}
+    ],
+    extras:[
+      {title:"Burns",text:"Cool the burn under cool (not cold) running water for at least 20 minutes. Do not apply ice, butter, or toothpaste. Cover loosely with a clean non-stick dressing. Seek medical attention for burns larger than your palm, on the face, hands, joints, or genitals, or if blisters form."},
+      {title:"Seizures",text:"Clear the area around the person. Do not hold them down or put anything in their mouth. Cushion their head. Time the seizure. If it lasts more than 5 minutes, or they don't regain consciousness, call emergency services."},
+      {title:"Allergic reaction (anaphylaxis)",text:"If the person has an epinephrine auto-injector (EpiPen), help them use it on the outer thigh. Call emergency services. Lay them down with legs elevated unless they are struggling to breathe — then sit them up. A second dose can be given after 5–15 minutes if symptoms don't improve."}
+    ]
+  },
+  mental: {
+    steps: [
+      {title:"You are not alone",desc:"What you're feeling right now is real, and it matters. Millions of people experience emotional crises — reaching out for help is a sign of strength, not weakness."},
+      {title:"If you're in immediate danger",desc:"Call your local emergency number. If you have a plan to hurt yourself and access to means, call now. Remove yourself from the means if possible — even a short delay can save your life."},
+      {title:"Call a crisis line",desc:"Use the crisis number shown for your country above. These are free, confidential, and available 24/7 in most countries. You don't need to be suicidal to call — any emotional distress qualifies."},
+      {title:"Ground yourself right now",desc:"Try the 5-4-3-2-1 technique: Name 5 things you can see, 4 you can touch, 3 you can hear, 2 you can smell, 1 you can taste. This brings your mind back to the present moment."},
+      {title:"Tell one person",desc:"Text or call someone you trust — a friend, family member, teacher, coworker. You don't need to explain everything. \"I'm having a hard time and I need someone to talk to\" is enough."},
+      {title:"Make yourself safe for the next hour",desc:"Go somewhere you feel safe. Remove access to anything you could use to hurt yourself. You only need to get through this hour. Then the next one. Help is coming."}
+    ],
+    extras:[
+      {title:"Panic attacks",text:"A panic attack feels terrifying but it will pass — usually within 10–20 minutes. Breathe slowly: in for 4 counts, hold for 4, out for 6. Place your feet flat on the ground. Remind yourself: this is temporary. Your body is not in danger."},
+      {title:"Helping someone else",text:"Listen without judgement. Don't say \"cheer up\" or \"it could be worse.\" Ask directly: \"Are you thinking about suicide?\" — asking does not plant the idea. Stay with them. Help them contact a crisis line or professional. Don't promise secrecy if their life is at risk."}
+    ]
+  },
+  money: {
+    steps: [
+      {title:"Apply for emergency government assistance",desc:"Most countries have emergency welfare, hardship funds, or crisis payments. Search \"[your country] emergency financial assistance\" or visit your local government office. You may qualify even if you have never applied before."},
+      {title:"Contact a food bank or community kitchen",desc:"Food banks operate in nearly every city worldwide. Many require no ID or proof of income. Search \"food bank near me\" or ask at a library, school, or place of worship. They will not judge you."},
+      {title:"Call 211 or your country's social services line",desc:"In the US, dial 211 for free referral to food, shelter, utilities, and financial help. In the UK, call Citizens Advice at 0800 144 8848. Most countries have similar helplines."},
+      {title:"Negotiate bills immediately",desc:"Call your utility companies, landlord, and creditors today. Explain your situation. Most will offer a payment plan, deferment, or hardship discount. Many disconnection and eviction rules require advance notice — know your rights."},
+      {title:"Seek free legal advice on debt",desc:"If you are in debt, free legal advice is often available through legal aid societies, law school clinics, or nonprofit debt counselling services. Do not pay for debt relief services without checking if free options exist first."},
+      {title:"Look for emergency work",desc:"Day labor, gig platforms (delivery, rideshare), temp agencies, and community job boards can provide income within days. Libraries offer free internet access for job searching. Many nonprofits offer emergency employment programs."}
+    ],
+    extras:[
+      {title:"Shelter",text:"If you cannot pay rent, contact your local housing authority about emergency housing, shelters, or rent assistance programs. Call before you are evicted — prevention programs are easier to access than emergency shelter after the fact."},
+      {title:"Medication",text:"Many pharmaceutical companies offer patient assistance programs for free or reduced-cost medication. Ask your pharmacist or doctor. Community health centres often provide care on a sliding scale."}
+    ]
+  },
+  rights: {
+    steps: [
+      {title:"You have rights — even if you don't know them",desc:"Under international law, every person has fundamental rights regardless of nationality, immigration status, gender, religion, or any other status. These include the right to life, freedom from torture, and the right to seek asylum."},
+      {title:"If you are detained or arrested",desc:"You generally have the right to: know why you are being detained, remain silent, speak to a lawyer, and be treated humanely. Say clearly: \"I want to speak to a lawyer.\" Do not sign anything you don't understand."},
+      {title:"If you need asylum or refugee protection",desc:"Under the 1951 Refugee Convention, you have the right to seek asylum in another country. Contact the UNHCR (unhcr.org) or a local refugee legal aid organization. You cannot be punished for entering a country to claim asylum."},
+      {title:"Workers' rights",desc:"In most countries, you have the right to: a safe workplace, minimum wage, and freedom from forced labor. If your employer is withholding pay, forcing unsafe conditions, or threatening you, contact your country's labor board or a workers' rights organization."},
+      {title:"Discrimination and harassment",desc:"If you are being discriminated against based on race, gender, disability, religion, or sexual orientation, document everything. Contact an equality or human rights commission in your country or a legal aid organization."},
+      {title:"Find free legal help",desc:"Legal aid is free legal advice and representation for people who can't afford a lawyer. Search \"free legal aid [your country]\" or contact your local bar association. Many nonprofits specialize in immigration, housing, and employment law."}
+    ],
+    extras:[
+      {title:"Children's rights",text:"Children have the right to education, protection from abuse and exploitation, and a standard of living adequate for their development. If a child is in danger, contact local child protection services or call your country's child abuse hotline."},
+      {title:"Digital rights",text:"You have the right to privacy in your communications. If someone is sharing intimate images of you without consent, most countries have laws against this. Contact police and a digital rights organization for help with removal."}
+    ]
+  },
+  disaster: {
+    steps: [
+      {title:"Earthquake",desc:"DROP to your hands and knees. Take COVER under a sturdy table or desk. HOLD ON until the shaking stops. Stay away from windows and heavy objects. If outside, move to an open area away from buildings. After shaking stops, watch for aftershocks."},
+      {title:"Flood",desc:"Move to higher ground immediately. Do not walk or drive through floodwater — 15 cm of moving water can knock you down, 60 cm can carry a vehicle. If trapped in a building, go to the highest floor. Signal for help from windows or the roof."},
+      {title:"Fire (building)",desc:"Get low and crawl — smoke rises. Feel doors before opening: if hot, don't open. Cover your mouth with a wet cloth. Go to the nearest exit. If clothes catch fire: stop, drop, and roll. Once out, stay out — never go back inside."},
+      {title:"Hurricane / Typhoon / Cyclone",desc:"Move to an interior room away from windows. If ordered to evacuate, go immediately. If you can't leave, stay on the highest floor away from flooding. Fill bathtubs with water for drinking. Turn off utilities if instructed."},
+      {title:"Tornado",desc:"Go to the lowest interior room (basement, bathroom, closet). Get under a sturdy piece of furniture. Protect your head and neck with your arms. Stay away from windows. If in a car, do not try to outrun — pull over and cover your head."},
+      {title:"After any disaster",desc:"Check yourself and others for injuries. Use first aid. Don't move seriously injured people unless in immediate danger. Listen to official channels for instructions. Avoid damaged buildings and downed power lines. Text instead of calling — it uses less bandwidth."}
+    ],
+    extras:[
+      {title:"Emergency kit essentials",text:"Water (4 litres per person per day for 3 days), non-perishable food, first aid kit, flashlight, batteries, phone charger, important documents in a waterproof bag, medications, cash, whistle, dust masks, and a manual can opener."},
+      {title:"Tsunami",text:"If near the coast and you feel strong shaking or see the ocean recede unusually: move inland and to high ground immediately. Do not wait for an official warning. A tsunami can arrive within minutes."}
+    ]
+  },
+  food: {
+    steps: [
+      {title:"Find free food now",desc:"Food banks, community kitchens, and soup kitchens operate in most cities. Religious institutions (churches, mosques, temples, gurdwaras) often provide free meals regardless of faith. School meal programs feed children during term."},
+      {title:"Make water safe to drink",desc:"If you're unsure about water safety: boil it at a rolling boil for at least 1 minute (3 minutes above 2000m elevation). If you can't boil, add 2 drops of unscented household bleach per litre, stir, and wait 30 minutes."},
+      {title:"Government food programs",desc:"Many countries have food stamp, voucher, or ration card programs. In the US: SNAP and WIC. In the UK: Universal Credit and food vouchers. In India: the Public Distribution System. Ask at your local government office — many programs allow same-day emergency enrollment."},
+      {title:"Community resources",desc:"Libraries, community centers, schools, and local nonprofits often know about food resources in your area. Don't be afraid to ask. Many programs exist specifically because people need them — there is no shame in using them."},
+      {title:"Nutrition on a very tight budget",desc:"Prioritize: dried beans, lentils, rice, oats, eggs, peanut butter, seasonal vegetables, and bananas. These provide the most nutrition per unit of money. Avoid pre-made meals and bottled water when tap water is safe."},
+      {title:"Baby formula and infant feeding",desc:"If you cannot afford infant formula, contact your local WIC office (US), health visitor (UK), or pediatric clinic. Many food banks carry formula. La Leche League and local health departments provide free breastfeeding support."}
+    ],
+    extras:[
+      {title:"Wild water sources",text:"Collect rainwater if possible — it's usually safe to drink directly. Running stream water is safer than still water but should still be boiled or treated. Never drink seawater. In an urban setting, water heater tanks and toilet tanks (not bowls) can be emergency water sources."},
+      {title:"Food safety in emergencies",text:"Without refrigeration, eat perishables first. Canned food lasts years and is safe if the can is not bulging, dented, or leaking. When in doubt, \"when in doubt, throw it out\" applies — food poisoning during a crisis is dangerous."}
+    ]
+  },
+  escape: {
+    steps: [
+      {title:"You deserve to be safe",desc:"If someone is hurting you — physically, sexually, emotionally, or financially — it is not your fault. You have the right to leave. Help is available, free, and confidential."},
+      {title:"Call a domestic violence hotline",desc:"Use the number shown for your country above. These lines are confidential, free, and staffed by trained advocates who can help you make a safety plan, find shelter, and access legal protection. Many offer text and online chat."},
+      {title:"Make a safety plan",desc:"Identify a safe place to go (friend, family, shelter). Keep important documents, keys, phone, medication, and some cash in a bag you can grab quickly. Memorize at least one emergency phone number."},
+      {title:"Digital safety",desc:"An abuser may be monitoring your phone, email, or location. Use a different device (library computer, friend's phone) to search for help. Turn off location sharing. Clear your browser history after visiting support sites, or use a private/incognito window."},
+      {title:"If you need to leave now",desc:"Go to a neighbor, public place, or call your local emergency number. Domestic violence shelters accept people at any hour. Bring your children if safe to do so. You do not need money, documents, or a plan — just go."},
+      {title:"Legal protection",desc:"In most countries, you can apply for a protection order (restraining order) at no cost. Police can help you obtain one. Domestic violence organizations can help you through the legal process."}
+    ],
+    extras:[
+      {title:"Human trafficking",text:"If you or someone you know is being forced to work, held against their will, or exploited: In the US, call the National Human Trafficking Hotline at 1-888-373-7888. Globally, contact the IOM at +41 22 717 9111 or your local police. You are not a criminal — you are a victim."},
+      {title:"Stalking",text:"Document everything: save messages, take screenshots, note dates and times. Tell someone you trust. Contact police about a protection order. Vary your routine. Check your car and belongings for tracking devices. Use the stalking safety resources from your local DV organization."}
+    ]
+  },
+  local: {
+    steps: [
+      {title:"Search for services near you",desc:"Search \"[type of help] near me\" or \"[type of help] [your city]\" — for example: \"food bank near me,\" \"free clinic Lagos,\" \"shelter São Paulo,\" \"legal aid Karachi.\""},
+      {title:"Call 211 or your national helpline",desc:"In the US and Canada, dial 211 for connection to local services including food, shelter, healthcare, employment, and crisis intervention. Many countries have equivalent numbers — check the hotlines listed for your country above."},
+      {title:"Visit a library",desc:"Public libraries are free and offer internet access, phone charging, climate-controlled space, and staff who know local resources. Many libraries host legal clinics, job fairs, and social service navigators."},
+      {title:"Places of worship",desc:"Churches, mosques, temples, gurdwaras, and synagogues often provide free meals, clothing, emergency funds, and referrals — usually regardless of your faith. Walk in and ask."},
+      {title:"Community health centres",desc:"Federally qualified health centres (US), community health centres, and public hospitals provide care regardless of ability to pay. Many offer sliding scale fees based on income. Bring any ID or documentation you have, but it is often not required."},
+      {title:"International organizations",desc:"The Red Cross / Red Crescent, UNHCR, Doctors Without Borders (MSF), UNICEF, and local NGOs operate in nearly every country. They provide medical care, food, shelter, legal aid, and protection. Contact them if you are displaced, a refugee, or in a disaster zone."}
+    ],
+    extras:[
+      {title:"Undocumented or without ID",text:"Many services — including emergency medical care, domestic violence shelters, food banks, and some legal aid — do not require ID or proof of status. Fear of deportation should not prevent you from seeking emergency help. Many organizations have policies against reporting immigration status."},
+      {title:"LGBTQ+ support",text:"If you are facing discrimination, violence, or rejection due to your sexual orientation or gender identity, organizations like ILGA World (ilga.org), The Trevor Project (US), Stonewall (UK), and local LGBTQ+ centers can provide crisis support, safe housing, and legal assistance."}
+    ]
+  }
+};
+
+// ─── SEARCH INDEX ───
+const SEARCH_INDEX = [];
+Object.keys(SECTION_CONTENT).forEach(catId => {
+  const cat = SECTION_CONTENT[catId];
+  const catMeta = CATEGORIES.find(c => c.id === catId);
+  cat.steps.forEach((s,i) => {
+    SEARCH_INDEX.push({cat:catId, icon:catMeta.icon, title:s.title, desc:s.desc, type:'step', idx:i});
+  });
+  if(cat.extras) cat.extras.forEach((e,i) => {
+    SEARCH_INDEX.push({cat:catId, icon:catMeta.icon, title:e.title, desc:e.text, type:'extra', idx:i});
+  });
+});
+
+// ─── STATE ───
+let currentLang = 'en';
+let currentCountry = '';
+let currentSection = null;
+
+// ─── INIT ───
+function init() {
+  buildLangSelect();
+  buildCountrySelect();
+  buildTiles();
+  setupSearch();
+  const saved = localStorage.getItem('lifekit-lang');
+  if (saved && LANGS[saved]) {
+    currentLang = saved;
+    document.getElementById('langSelect').value = saved;
+  }
+  const savedCountry = localStorage.getItem('lifekit-country');
+  if (savedCountry && COUNTRIES[savedCountry]) {
+    currentCountry = savedCountry;
+    document.getElementById('countrySelect').value = savedCountry;
+  }
+  updateLanguage();
+  updateCountry();
+}
+
+function buildLangSelect() {
+  const sel = document.getElementById('langSelect');
+  Object.keys(LANGS).forEach(code => {
+    const opt = document.createElement('option');
+    opt.value = code;
+    opt.textContent = LANGS[code].name;
+    sel.appendChild(opt);
+  });
+}
+
+function buildCountrySelect() {
+  const sel = document.getElementById('countrySelect');
+  const def = document.createElement('option');
+  def.value = '';
+  def.textContent = '🌍 Where are you?';
+  sel.appendChild(def);
+  Object.keys(COUNTRIES).sort().forEach(name => {
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = name;
+    sel.appendChild(opt);
+  });
+}
+
+function buildTiles() {
+  const grid = document.getElementById('tilesGrid');
+  grid.innerHTML = '';
+  const ui = UI[currentLang] || UI.en;
+  CATEGORIES.forEach(cat => {
+    const tile = document.createElement('div');
+    tile.className = 'tile' + (cat.urgent ? ' urgent' : '');
+    tile.setAttribute('role','button');
+    tile.setAttribute('tabindex','0');
+    tile.setAttribute('aria-label', ui[cat.id]);
+    tile.innerHTML = `<span class="tile-icon">${cat.icon}</span><span class="tile-label">${ui[cat.id]}</span>`;
+    tile.onclick = () => showSection(cat.id);
+    tile.onkeydown = e => { if(e.key==='Enter'||e.key===' ') { e.preventDefault(); showSection(cat.id); }};
+    grid.appendChild(tile);
+  });
+}
+
+function setupSearch() {
+  const input = document.getElementById('searchInput');
+  const results = document.getElementById('searchResults');
+  input.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    if (q.length < 2) { results.classList.remove('active'); return; }
+    const ui = UI[currentLang] || UI.en;
+    const matches = SEARCH_INDEX.filter(item =>
+      item.title.toLowerCase().includes(q) || item.desc.toLowerCase().includes(q)
+    ).slice(0, 8);
+    if (!matches.length) { results.classList.remove('active'); return; }
+    results.innerHTML = matches.map(m =>
+      `<div class="search-result-item" onclick="showSection('${m.cat}')">
+        <span class="sr-icon">${m.icon}</span>
+        <span class="sr-label">${m.title}</span>
+        <span class="sr-cat">${ui[m.cat] || m.cat}</span>
+      </div>`
+    ).join('');
+    results.classList.add('active');
+  });
+  input.addEventListener('blur', () => { setTimeout(() => results.classList.remove('active'), 200); });
+  input.addEventListener('focus', () => { if(input.value.trim().length >= 2) input.dispatchEvent(new Event('input')); });
+}
+
+function updateLanguage() {
+  const lang = document.getElementById('langSelect').value;
+  currentLang = lang;
+  localStorage.setItem('lifekit-lang', lang);
+  const ui = UI[lang] || UI.en;
+  const dir = LANGS[lang]?.dir || 'ltr';
+  document.documentElement.lang = lang;
+  document.documentElement.dir = dir;
+  document.getElementById('heroText').textContent = ui.hero;
+  document.getElementById('searchInput').placeholder = ui.search;
+  document.getElementById('cbLabel').textContent = ui.emergency + ':';
+  buildTiles();
+  if (currentSection) showSection(currentSection);
+}
+
+function updateCountry() {
+  const name = document.getElementById('countrySelect').value;
+  currentCountry = name;
+  if (name) localStorage.setItem('lifekit-country', name);
+  const banner = document.getElementById('countryBanner');
+  const nums = document.getElementById('emergencyNums');
+  if (!name || !COUNTRIES[name]) { banner.style.display = 'none'; return; }
+  const c = COUNTRIES[name];
+  banner.style.display = 'block';
+  let html = '';
+  html += `<a href="tel:${c.police.replace(/\s/g,'')}" class="emergency-num amber">📞 Police: ${c.police}</a>`;
+  if (c.fire !== c.police) html += `<a href="tel:${c.fire.replace(/\s/g,'')}" class="emergency-num">🔥 Fire: ${c.fire}</a>`;
+  html += `<a href="tel:${c.ambulance.replace(/\s/g,'')}" class="emergency-num">🚑 Ambulance: ${c.ambulance}</a>`;
+  if (c.crisis) {
+    const num = c.crisis.split('(')[0].trim();
+    html += `<a href="tel:${num.replace(/\s/g,'')}" class="emergency-num">💙 ${c.crisis}</a>`;
+  }
+  nums.innerHTML = html;
+  if (currentSection) showSection(currentSection);
+}
+
+function showSection(id) {
+  currentSection = id;
+  const ui = UI[currentLang] || UI.en;
+  const cat = CATEGORIES.find(c => c.id === id);
+  const content = SECTION_CONTENT[id];
+  if (!cat || !content) return;
+
+  document.getElementById('tilesSection').style.display = 'none';
+  document.getElementById('heroSection').style.display = 'none';
+  const container = document.getElementById('contentSections');
+
+  let html = `<button class="back-btn" onclick="showHome()">← ${ui.back}</button>`;
+  html += `<div class="section-block active">`;
+  html += `<div class="section-header"><span class="sh-icon">${cat.icon}</span><h2>${ui[id]}</h2></div>`;
+  html += `<ol class="step-list">`;
+  content.steps.forEach(s => {
+    html += `<li><strong>${s.title}</strong><p>${s.desc}</p></li>`;
+  });
+  html += `</ol>`;
+
+  if (content.extras) {
+    content.extras.forEach(e => {
+      html += `<div class="info-card"><h4>${e.title}</h4><p>${e.text}</p></div>`;
+    });
+  }
+
+  // Country-specific hotlines
+  if (currentCountry && COUNTRIES[currentCountry]) {
+    const c = COUNTRIES[currentCountry];
+    html += `<div class="hotline-box"><h4>${ui.hotlines} — ${currentCountry}</h4><ul class="hotline-list">`;
+    html += `<li>📞 <strong>Police:</strong> ${c.police}</li>`;
+    html += `<li>🚑 <strong>Ambulance:</strong> ${c.ambulance}</li>`;
+    html += `<li>🔥 <strong>Fire:</strong> ${c.fire}</li>`;
+    if (c.crisis) html += `<li>💙 <strong>Crisis:</strong> ${c.crisis}</li>`;
+    if (c.dv) html += `<li>🛡️ <strong>Domestic Violence:</strong> ${c.dv}</li>`;
+    html += `</ul></div>`;
+  }
+
+  html += `</div>`;
+  container.innerHTML = html;
+  container.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function showHome() {
+  currentSection = null;
+  document.getElementById('tilesSection').style.display = '';
+  document.getElementById('heroSection').style.display = '';
+  document.getElementById('contentSections').innerHTML = '';
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
